@@ -7,9 +7,11 @@ public class SolarScan {
     private final int low;
     int sast_score;
     private final int datetime;
-    private final  int scan;
+    private final int scan;
 
-    public SolarScan(int code_lines, int total, int critical, int high, int medium, int low, int sast_score, int datetime, int scan) {
+    final int release_type;
+
+    public SolarScan(int code_lines, int total, int critical, int high, int medium, int low, int sast_score, int datetime, int scan, int release_type) {
         this.code_lines = code_lines;
         this.total = total;
         this.critical = critical;
@@ -19,6 +21,7 @@ public class SolarScan {
         this.sast_score = sast_score;
         this.datetime = datetime;
         this.scan = scan;
+        this.release_type = release_type;
     }
 
     public int getRiskFactor() {
@@ -41,6 +44,14 @@ public class SolarScan {
         return total;
     }
 
+    public int getCode_lines() {
+        return code_lines;
+    }
+
+    public int getRelease_type() {
+        return release_type;
+    }
+
     public int getCriticalHigh() {
         return critical + high;
     }
@@ -48,4 +59,5 @@ public class SolarScan {
     public int getMediumLow() {
         return medium + low;
     }
+
 }

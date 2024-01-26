@@ -4,9 +4,9 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        int[][] data = new int[10][9];
+        int[][] data = new int[10][10];
         int i = 0;
-        try(Scanner scanner = new Scanner(new File("/Users/ilyazuev/IdeaProjects/QualityGateTest/src/Data.csv"))){
+        try(Scanner scanner = new Scanner(new File("/Users/ilyazuev/IdeaProjects/QualityGate/src/Data.csv"))){
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 try (Scanner rowScanner = new Scanner(line)) {
@@ -17,7 +17,7 @@ public class Main {
                 }
                 try (Scanner rowScanner2 = new Scanner(line)) {
                     rowScanner2.useDelimiter(";");
-                    for (int j=0;j<9;j++) {
+                    for (int j=0;j<10;j++) {
                         data[i][j] = Integer.parseInt(rowScanner2.next());
                     }
                 }
@@ -39,7 +39,9 @@ public class Main {
                     data[i][5], // low
                     data[i][6], // sast_score
                     data[i][7], // datetime
-                    data[i][8]); // scan
+                    data[i][8], // scan
+                    data[i][9] ); // release_type
+
         }
         getResult(solarScans);
     }
@@ -51,9 +53,21 @@ public class Main {
         int F5 = getCritFreqFlag(solarScans[0], solarScans[1]) ? 1 : 0;
         int F6 = getAbsCritFlag(solarScans[0], solarScans[1]) ? 1 : 0;
         int F7 = getAbsCritHighFlag(solarScans[0], solarScans[1]) ? 1 : 0;
+        int F8 = getAbsMediumLow(solarScans[0], solarScans[9]) ? 1 : 0;
 
-        double expression = getExpression(F2, F3, F5, F6, F7);
-        System.out.println(getHardState(expression));
+        if (solarScans[0].getRelease_type() == 0) {
+            // Minor
+            double expression = getExpression(F2, F3, F5, F6, F7);
+            boolean hardState = getHardState(expression);
+            boolean minor = (F1 == 1) && hardState && (F8 == 1);
+            System.out.println("Minor: " + minor);
+        } else {
+            // Major
+            boolean dynamic = getCodeVulnerabilityDynamic(solarScans[0], solarScans[1]) >
+                    getTotalDensityReduction(solarScans[0], solarScans[1]);
+            boolean major = (F1 == 1) && dynamic && (F8 == 1);
+            System.out.println("Major: " + major);
+        }
     }
 
     public static boolean getSASTScoreFlag(SolarScan self) {
@@ -97,5 +111,14 @@ public class Main {
         return (expression - 0.5) > 0;
     }
 
+    public static int getCodeVulnerabilityDynamic(SolarScan self, SolarScan other) {
+        return Math.abs(self.getTotal() - other.getTotal()) != 0 ?
+                (Math.abs(self.getCode_lines() - other.getCode_lines())) / (Math.abs(self.getTotal() - other.getTotal())) : 0;
+    }
+
+    public static int getTotalDensityReduction(SolarScan self, SolarScan other) {
+        return self.getTotalDensity() != 0 ?
+                (self.getTotalDensity() - other.getTotalDensity()) / self.getTotalDensity() * 100 : 0;
+    }
 
 }
